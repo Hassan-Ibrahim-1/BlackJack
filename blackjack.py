@@ -10,6 +10,7 @@ values = {'Two':2, 'Three':3, 'Four':4, 'Five':5, 'Six':6, 'Seven':7, 'Eight':8,
          'Queen':10, 'King':10, 'Ace':11}
 
 game_over = False
+replaying = False
 
 
 class Card:
@@ -60,6 +61,9 @@ class Player:
 
     def withdraw(self, amount):
 
+        if amount.lower() in ['q', 'quit', 'exit']:
+                quit()
+
         if amount.isdigit():
             amount = int(amount)
         else:
@@ -69,13 +73,15 @@ class Player:
 
         if self.bal < amount:
             clear
-            print("Your bet can't exceed", self.bal)
+            print(f"Your bet can't exceed {self.bal}")
             return False
         else:
             self.bal -= amount
             return True
 
     def add_card(self, card):
+        global game_over
+
         self.cards.append(card)
         self.value += card.value
         if card.rank == 'Ace' or card.value == 11:
@@ -84,8 +90,21 @@ class Player:
             self.value -= 10
             self.aces -= 1
 
+        if self.value == 21:
+            game_over = True
+            player_win()
+        if self.value > 21:
+            clear()
+            print("You went over 21 and busted!")
+            sleep(0.5)
+            game_over = True
+            dealer_win()
+
+
 
     def __str__(self):
+        global game_over
+
         all_cards = ''
         for card in self.cards:
             all_cards = all_cards + card.__str__() + ', '
@@ -94,8 +113,8 @@ class Player:
         if game_over == True:
             return f'\n\nPlayer:\n  Balance: {self.bal}\n  Cards: {all_cards}\n  Total: {self.value}'
 
-        else: 
-            return f'\n\nPlayer:\n  Cards: {all_cards}\n  Total: {self.value}'
+        elif game_over == False: 
+            return f'\nPlayer:\n  Cards: {all_cards}\n  Total: {self.value}'
 
 class Dealer:
 
@@ -106,6 +125,8 @@ class Dealer:
 
 
     def add_card(self, card):
+        global game_over
+
         self.cards.append(card)
         self.value += card.value
         if card.rank == 'Ace' or card.value == 11:
@@ -114,12 +135,23 @@ class Dealer:
             self.value -= 10
             self.aces -= 1
 
+        if self.value == 21:
+            game_over = True
+            dealer_win()
+        if self.value > 21:
+            clear()
+            print("The dealer went over 21 and busted!")
+            sleep(0.5)
+            game_over = True
+            player_win()
 
     def __str__(self):
+        global game_over
+
         if game_over == False:
             return f'\n\nDealer:\n  Cards: {self.cards[0]}, ?\n  Total: ?'
 
-        else:
+        elif game_over == True:
             all_cards = ''
             for card in self.cards:
                 all_cards = all_cards + card.__str__() + ', '
@@ -127,23 +159,104 @@ class Dealer:
             return f'\n\nDealer:\n  Cards: {all_cards}\n  Total: {self.value}'
 
 
-
 def place_bet():
+    global bet
+
     while True:
         print(f'Balance: {player.bal}')
         bet = input("Place your bet: ")
-        check = player.withdraw(bet)
+        choice = player.withdraw(bet)
 
-        while not check:
+        while not choice:
             sleep(0.6)
             clear()
             print(f'Balance: {player.bal}')
             bet = input("Place your bet: ")
-            check = player.withdraw(bet)
+            choice = player.withdraw(bet)
         break
+
+def player_win():
+    clear()
+    global game_over
+    game_over = True
+    clear()
+    print("You won!")
+    player.deposit(int(bet)*2)
+    sleep(0.5)
+
+    print(player)
+    print(dealer)
+
+    replay()
+
+def dealer_win():
+    clear()
+    global game_over
+    game_over = True
+    print("The dealer won!")
+    sleep(0.5)
+
+    print(player)
+    print(dealer)
+    replay()
+
+def tie():
+    clear()
+    global game_over
+    game_over = True
+    print("Tie!")
+    sleep(0.5)
+
+    print(player)
+    print(dealer)
+    replay()
+
+
+def replay():
+    global replaying
+
+    choice = input("\nPlayer again (Y or N): ")
+    while choice.lower() not in ['y', 'yes', 'n', 'no', 'q', 'quit', 'exit']:
+        clear()
+        choice = input("\nPlayer again (Y or N): ")
+
+    if choice.lower() in ['y', 'yes']:
+        replaying = True
+        game()
+            
+    elif choice.lower() in ['n', 'no', 'q', 'quit', 'exit']:
+        quit()
+
+
+
 
 def game():
     global game_over
+    global replaying
+    global deck
+    global player
+    global dealer
+
+
+    if replaying:
+        clear() 
+        print("Welcome to Black Jack!")
+        print("\nEnter 'q' to quit the game.")
+        sleep(1)
+        clear()
+        
+        game_over = False
+        stay = False
+        deck = Deck()
+        deck.shuffle()
+        dealer = Dealer()
+    
+    else:
+        game_over = False
+        stay = False
+
+    
+    place_bet()
 
     player.add_card(deck.deal())
     player.add_card(deck.deal())
@@ -151,12 +264,43 @@ def game():
     dealer.add_card(deck.deal())
 
     while not game_over:
-        pass
+        while True:
+            clear()
+            print(player)
+            print(dealer)
+            choice = input("\nHit or Stay: ")
+            if choice.lower() in ['h', 'hit', 'deal']:
+                player.add_card(deck.deal())
+                break
+            elif choice.lower() in ['s', 'stop', 'stay']:
+                stay = True
+                break
+            elif choice.lower() in ['q', 'quit', 'exit']:
+                quit()
+
+        if stay:
+            while dealer.value < 17:
+                dealer.add_card(deck.deal())
+
+            if dealer.value > player.value:
+                dealer_win()          
+            elif player.value > dealer.value:
+                player_win()
+            elif dealer.value == player.value:
+                tie()
 
 
-if __name__ == "__main__":    
+
+
+if __name__ == "__main__":
+    clear() 
+    print("Welcome to Black Jack!")
+    print("\nEnter 'q' to quit the game.")
+    sleep(1)
+    clear()
+
     player = Player(bal=100)
     deck = Deck()
     deck.shuffle()
     dealer = Dealer()
-    place_bet()
+    game()
