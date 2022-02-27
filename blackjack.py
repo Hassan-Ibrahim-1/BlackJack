@@ -183,7 +183,6 @@ def player_win():
     print("You won!")
     player.deposit(int(bet)*2)
     sleep(0.5)
-
     print(player)
     print(dealer)
 
@@ -245,6 +244,11 @@ def game():
         sleep(1)
         clear()
         
+        deck = Deck()
+        deck.shuffle()
+        player = Player(bal=player.bal)
+        dealer = Dealer()
+
         game_over = False
         stay = False
         deck = Deck()
