@@ -167,12 +167,18 @@ def place_bet():
         bet = input("Place your bet: ")
         choice = player.withdraw(bet)
 
+        if choice.lower() in ['n', 'no', 'q', 'quit', 'exit']:
+            quit()
+         
         while not choice:
             sleep(0.6)
             clear()
             print(f'Balance: {player.bal}')
             bet = input("Place your bet: ")
             choice = player.withdraw(bet)
+                  
+            if choice.lower() in ['n', 'no', 'q', 'quit', 'exit']:
+                quit()
         break
 
 def player_win():
