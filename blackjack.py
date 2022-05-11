@@ -167,7 +167,7 @@ def place_bet():
         bet = input("Place your bet: ")
         choice = player.withdraw(bet)
 
-        if choice.lower() in ['n', 'no', 'q', 'quit', 'exit']:
+        if bet.lower() in ['n', 'no', 'q', 'quit', 'exit']:
             quit()
          
         while not choice:
@@ -177,7 +177,7 @@ def place_bet():
             bet = input("Place your bet: ")
             choice = player.withdraw(bet)
                   
-            if choice.lower() in ['n', 'no', 'q', 'quit', 'exit']:
+            if bet.lower() in ['n', 'no', 'q', 'quit', 'exit']:
                 quit()
         break
 
